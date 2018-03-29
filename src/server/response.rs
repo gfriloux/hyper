@@ -218,7 +218,12 @@ impl<'a> Write for Response<'a, Streaming> {
     #[inline]
     fn write(&mut self, msg: &[u8]) -> io::Result<usize> {
         debug!("write {:?} bytes", msg.len());
-        self.body.write(msg)
+        let r = self.body.write(msg);
+        if let Err(x) = self.body.flush() {
+           debug!("Error flushing socket");
+           return Err(x);
+        }
+        r
     }
 
     #[inline]
